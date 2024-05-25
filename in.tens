@@ -1,0 +1,46 @@
+# LJ test of msst shock dynamics
+
+# Energy in eV, time in ps, distance in angstroms.
+units		metal
+
+boundary        p p p
+
+atom_style	atomic
+read_data       p-phtamide444.data
+timestep        0.0005
+
+
+# Initial velocities correspond to around 300K.
+velocity   all create 300.0  236710
+
+pair_style      deepmd /home/zbw/liulei/deepmd-marco-responese/dpgen/c/compress.pb
+pair_coeff  	* *   
+
+thermo		1
+dump		id all atom 100 dump.tens444
+# Equilibrate the system
+#fix            reee all qeq/reax 1 0.0 10.0 1e-6 reax/c
+fix balance     all npt  temp  300 300  0.05 aniso 0  0  0.5
+thermo_style    custom step temp press vol density
+run  10000
+
+variable    ltmp equal lz
+variable    lini equal ${ltmp}
+print       "initial length, lini: ${lini} ${ltmp}"
+
+unfix  balance 
+
+fix           1 all npt temp 300 300 0.05 x 0 0 0.5 y 0 0 0.5 drag 1
+fix           2 all deform 1 z erate 0.001 units box remap x
+variable      strain equal (lz-v_lini)/v_lini
+variable      stress equal -pzz/10000
+fix           3 all print 10 "${strain} ${stress}" file strain_stress.txt screen no
+run           400000
+
+# MSST fix
+#fix		msst all msst y 60 q 200 mu 3e2 tscale 0.01  
+
+# this is needed to make etotal equal the MSST conserved quantity
+#fix_modify msst energy yes
+
+
