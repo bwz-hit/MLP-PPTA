@@ -1,17 +1,6 @@
-# LJ test of msst shock dynamics
 
-# Energy in eV, time in ps, distance in angstroms.
+
 units		metal
 
-boundary        p p p
-
-atom_style	atomic
-read_data       p-phtamide444.data
-timestep        0.0005
-
-
-# Initial velocities correspond to around 300K.
-velocity   all create 300.0  236710
-
-pair_style      deepmd /home/zbw/liulei/deepmd-marco-responese/dpgen/c/compress.pb
+pair_style      deepmd compress.pb
 pair_coeff  	* *   
